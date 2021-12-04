@@ -890,35 +890,62 @@ class ButtonCard extends LitElement {
     const liveStream = this._buildLiveStream(entityPictureStyle);
 
     if (icon || entityPicture) {
-      return html`
-        <div id="img-cell" style=${styleMap(imgCellStyleFromConfig)}>
-          ${icon && !entityPicture && !liveStream
-            ? html`
-                <ha-icon
-                  style=${styleMap(haIconStyle)}
-                  .icon="${icon}"
-                  id="icon"
-                  ?rotating=${this._rotate(configState)}
-                ></ha-icon>
-              `
-            : ''}
-          ${liveStream ? liveStream : ''}
-          ${entityPicture && !liveStream
-            ? html`
-                <img
-                  src="${entityPicture}"
-                  style=${styleMap(entityPictureStyle)}
-                  id="icon"
-                  ?rotating=${this._rotate(configState)}
-                />
-              `
-            : ''}
-        </div>
-      `;
+      if (typeof icon === 'string') {
+        return html`
+          <div id="img-cell" style=${styleMap(imgCellStyleFromConfig)}>
+            ${icon && !entityPicture && !liveStream
+              ? html`
+                  <ha-icon
+                    style=${styleMap(haIconStyle)}
+                    .icon="${icon}"
+                    id="icon"
+                    ?rotating=${this._rotate(configState)}
+                  ></ha-icon>
+                `
+              : ''}
+            ${liveStream ? liveStream : ''}
+            ${entityPicture && !liveStream
+              ? html`
+                  <img
+                    src="${entityPicture}"
+                    style=${styleMap(entityPictureStyle)}
+                    id="icon"
+                    ?rotating=${this._rotate(configState)}
+                  />
+                `
+              : ''}
+          </div>
+        `;
+      } else if (icon && Array.isArray(icon) === true) {
+        return html`
+          <svg class="svgicon" viewBox="0 0 50 50" height="75%" width="65%">
+            <path fill="#d3d3d3" d=${icon[0]} />
+            <path
+              d=${icon[1]}
+              class=${classMap({
+                'state-on': this._computeActiveState(state) === 'on',
+                'state-off': this._computeActiveState(state) === 'off',
+                'state-unavailable': this._computeActiveState(state) === 'unavailable',
+              })}
+            />
+          </svg>
+        `;
+      } else {
+        return html``;
+      }
     } else {
       return undefined;
     }
   }
+
+  private _computeActiveState = (stateObj): string => {
+    const domain = stateObj.entity_id.split('.')[0];
+    let state = stateObj.state;
+    if (domain === 'climate') {
+      state = stateObj.attributes.hvac_action;
+    }
+    return state;
+  };
 
   private _buildLiveStream(style: StyleInfo): TemplateResult | undefined {
     if (this._config!.show_live_stream && this._config!.entity && computeDomain(this._config!.entity) === 'camera') {

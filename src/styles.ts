@@ -177,6 +177,11 @@ export const styles = css`
     max-height: 100%;
     position: absolute;
   }
+
+  .state-on {
+    fill: var(--paper-item-icon-active-color, #fdd835);
+  }
+
   img#icon {
     display: block;
     height: auto;
